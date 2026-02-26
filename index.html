@@ -1,204 +1,199 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vedic AI Preprocessor · BugSlayers</title>
-    <!-- Chart.js for performance comparison -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            background: #f8fafc;
-            padding: 2rem 1.5rem;
-            color: #0f172a;
-        }
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .logo h1 {
-            font-size: 2.2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #2e1a47, #b91c1c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.5px;
-        }
-        .logo p {
-            color: #334155;
-            font-weight: 400;
-            margin-top: 0.2rem;
-        }
-        .team-badge {
-            background: #1e293b;
-            color: #f1f5f9;
-            padding: 0.6rem 1.4rem;
-            border-radius: 40px;
-            font-weight: 500;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-        .team-badge span {
-            color: #facc15;
-            font-weight: 700;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2.5rem;
-        }
-        .card {
-            background: white;
-            border-radius: 32px;
-            padding: 1.8rem 2rem;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
-            border: 1px solid #e2e8f0;
-            transition: 0.2s;
-        }
-        .card:hover {
-            border-color: #cbd5e1;
-        }
-        .card h2 {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            font-weight: 600;
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: #0f172a;
-            border-bottom: 3px solid #f1f5f9;
-            padding-bottom: 0.75rem;
-        }
-        .card h2 i {
-            font-size: 2rem;
-        }
-        .input-group {
-            margin-bottom: 1.8rem;
-        }
-        label {
-            font-weight: 500;
-            display: block;
-            margin-bottom: 0.4rem;
-            color: #334155;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 0.9rem 1.2rem;
-            font-size: 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 24px;
-            outline: none;
-            transition: 0.15s;
-            background: #f8fafc;
-        }
-        input:focus, textarea:focus {
-            border-color: #b91c1c;
-            background: white;
-        }
-        textarea {
-            font-family: monospace;
-            resize: vertical;
-        }
-        .btn {
-            background: #0f172a;
-            color: white;
-            border: none;
-            padding: 0.9rem 2rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: 0.15s;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            width: 100%;
-        }
-        .btn:hover {
-            background: #2d3a5e;
-            transform: scale(1.01);
-        }
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #0f172a;
-            margin-top: 0.8rem;
-            box-shadow: none;
-        }
-        .btn-secondary:hover {
-            background: #cbd5e1;
-        }
-        .result-box {
-            background: #f1f4f9;
-            border-radius: 24px;
-            padding: 1.5rem;
-            margin-top: 1.8rem;
-            border-left: 6px solid #b91c1c;
-        }
-        .result-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.8rem;
-            font-size: 1.1rem;
-        }
-        .badge {
-            background: #0f172a;
-            color: white;
-            border-radius: 30px;
-            padding: 0.2rem 1rem;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        .time-compare {
-            display: flex;
-            gap: 2rem;
-            margin: 1rem 0 0.5rem;
-            flex-wrap: wrap;
-        }
-        .time-card {
-            background: white;
-            border-radius: 20px;
-            padding: 0.8rem 1.5rem;
-            text-align: center;
-            flex: 1;
-            border: 1px solid #e2e8f0;
-        }
-        .time-value {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #b91c1c;
-        }
-        canvas {
-            max-height: 200px;
-            margin: 1rem 0;
-        }
-        .footer-note {
-            background: #fef9c3;
-            border-radius: 40px;
-            padding: 1.2rem 2rem;
-            text-align: center;
-            font-size: 1rem;
-            border: 1px solid #facc15;
-            color: #1e293b;
-        }
-        .footer-note strong {
-            color: #b91c1c;
-        }
-        @media (max-width: 800px) {
-            .grid { grid-template-columns: 1fr; }
-        }
-    </style>
 
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="logo">
+            <h1>🕉️ Vedic AI Preprocessor</h1>
+            <p>fast squaring · duplex normalization · vedic arithmetic engine</p>
+        </div>
+        <div class="team-badge">
+            <span>BugSlayers</span> · Salim · Kumkum · Rishu · Divya
+        </div>
+    </header>
+
+    <div class="grid">
+        <!-- FAST SQUARING CARD -->
+        <div class="card">
+            <h2><i>🔲</i> Vedic Fast Squaring</h2>
+            <div class="input-group">
+                <label>Numbers (comma separated, ending with 5 for vedic efficiency)</label>
+                <textarea id="squareInput" rows="2">15, 25, 35, 125, 205</textarea>
+            </div>
+            <button class="btn" id="squareBtn">Compute squares ⚡</button>
+            <button class="btn btn-secondary" id="squareSampleBtn">↻ load sample</button>
+
+            <div class="result-box" id="squareResult" style="display: none;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="badge">traditional vs vedic</span>
+                    <span class="badge" style="background: #b91c1c;">duplex method</span>
+                </div>
+                <div class="time-compare">
+                    <div class="time-card">
+                        <div>🕒 traditional</div>
+                        <div class="time-value" id="tradTimeSquare">0.000 s</div>
+                    </div>
+                    <div class="time-card">
+                        <div>⚡ vedic</div>
+                        <div class="time-value" id="vedicTimeSquare">0.000 s</div>
+                    </div>
+                </div>
+                <canvas id="squareChart" width="400" height="150"></canvas>
+                <div id="squareValues" style="font-family: monospace; background: white; padding: 0.8rem; border-radius: 16px; margin-top: 0.8rem;">
+                </div>
+            </div>
+        </div>
+
+        <!-- NORMALIZATION CARD (with vedic squaring in variance) -->
+        <div class="card">
+            <h2><i>📊</i> Vedic Normalization</h2>
+            <div class="input-group">
+                <label>Dataset (integers, comma separated)</label>
+                <textarea id="normInput" rows="2">10, 20, 30, 40, 50</textarea>
+            </div>
+            <button class="btn" id="normBtn">Normalize (z‑score) ⚡</button>
+            <button class="btn btn-secondary" id="normSampleBtn">↻ load sample</button>
+
+            <div class="result-box" id="normResult" style="display: none;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="badge">z‑score & std</span>
+                    <span class="badge" style="background: #b91c1c;">vedic squared dev.</span>
+                </div>
+                <div class="time-compare">
+                    <div class="time-card">
+                        <div>🕒 traditional</div>
+                        <div class="time-value" id="tradTimeNorm">0.000 s</div>
+                    </div>
+                    <div class="time-card">
+                        <div>⚡ vedic</div>
+                        <div class="time-value" id="vedicTimeNorm">0.000 s</div>
+                    </div>
+                </div>
+                <canvas id="normChart" width="400" height="150"></canvas>
+                <div id="normValues" style="font-family: monospace; background: white; padding: 0.8rem; border-radius: 16px; margin-top: 0.8rem; max-height: 160px; overflow-y: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <strong>🔹 USP:</strong> Vedic duplex squaring (numbers ending with 5) + optimized normalization · reduces arithmetic steps · ancient wisdom for modern AI.
+    </div>
+</div>
+
+<script>
+    // chart instances
+    let squareChart, normChart;
+
+    // helper: format number
+    const formatNum = (n) => Number(n).toFixed(6);
+
+    // load samples
+    document.getElementById('squareSampleBtn').addEventListener('click', ()=>{
+        document.getElementById('squareInput').value = '15, 25, 35, 125, 205';
+    });
+    document.getElementById('normSampleBtn').addEventListener('click', ()=>{
+        document.getElementById('normInput').value = '12, 18, 24, 30, 36, 42';
+    });
+
+    // ---------- SQUARE ----------
+    document.getElementById('squareBtn').addEventListener('click', async ()=>{
+        const raw = document.getElementById('squareInput').value;
+        const nums = raw.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        if (nums.length === 0) return alert('Enter valid numbers');
+
+        const resp = await fetch('/api/square', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({numbers: nums})
+        });
+        const data = await resp.json();
+        if (data.error) return alert(data.error);
+
+        const trad = data.traditional;
+        const vedic = data.vedic;
+
+        // fill times
+        document.getElementById('tradTimeSquare').innerText = trad.time.toFixed(6) + ' s';
+        document.getElementById('vedicTimeSquare').innerText = vedic.time.toFixed(6) + ' s';
+
+        // display values
+        let tradVals = trad.results.map((v,i)=> `${nums[i]}² = ${v}`).join(' ');
+        let vedicVals = vedic.results.map((v,i)=> `${nums[i]}² = ${v}`).join(' ');
+        document.getElementById('squareValues').innerHTML = `
+            <div style="color:#1e293b;"><span style="color:#b91c1c;">●</span> traditional: ${tradVals}</div>
+            <div style="color:#1e293b; margin-top:6px;"><span style="color:#0f172a;">●</span> vedic: ${vedicVals}</div>
+        `;
+
+        document.getElementById('squareResult').style.display = 'block';
+
+        // update chart
+        if (squareChart) squareChart.destroy();
+        const ctx = document.getElementById('squareChart').getContext('2d');
+        squareChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Execution time (s)'],
+                datasets: [
+                    { label: 'traditional', data: [trad.time], backgroundColor: '#b91c1c', borderRadius: 8 },
+                    { label: 'vedic (duplex)', data: [vedic.time], backgroundColor: '#0f172a', borderRadius: 8 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+        });
+    });
+
+    // ---------- NORMALIZE ----------
+    document.getElementById('normBtn').addEventListener('click', async ()=>{
+        const raw = document.getElementById('normInput').value;
+        const nums = raw.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+        if (nums.length < 2) return alert('Need at least 2 numbers');
+
+        const resp = await fetch('/api/normalize', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({numbers: nums})
+        });
+        const data = await resp.json();
+        if (data.error) return alert(data.error);
+
+        const trad = data.traditional;
+        const vedic = data.vedic;
+
+        document.getElementById('tradTimeNorm').innerText = trad.time.toFixed(6) + ' s';
+        document.getElementById('vedicTimeNorm').innerText = vedic.time.toFixed(6) + ' s';
+
+        // display z-scores (truncate for readability)
+        let tradZ = trad.z_scores.map(z => z.toFixed(4)).join(', ');
+        let vedicZ = vedic.z_scores.map(z => z.toFixed(4)).join(', ');
+        document.getElementById('normValues').innerHTML = `
+            <div><span style="color:#b91c1c;">●</span> <strong>traditional</strong> (σ=${trad.std.toFixed(4)})  z = [${tradZ}]</div>
+            <div style="margin-top:8px;"><span style="color:#0f172a;">●</span> <strong>vedic</strong> (σ=${vedic.std.toFixed(4)})  z = [${vedicZ}]</div>
+        `;
+
+        document.getElementById('normResult').style.display = 'block';
+
+        if (normChart) normChart.destroy();
+        const ctx2 = document.getElementById('normChart').getContext('2d');
+        normChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Execution time (s)'],
+                datasets: [
+                    { label: 'traditional', data: [trad.time], backgroundColor: '#b91c1c', borderRadius: 8 },
+                    { label: 'vedic (sq. dev.)', data: [vedic.time], backgroundColor: '#0f172a', borderRadius: 8 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+        });
+    });
+
+    // optional: trigger sample on first load
+    window.onload = ()=>{
+        document.getElementById('squareSampleBtn').click();
+        document.getElementById('normSampleBtn').click();
+    };
+</script>
+<!-- note: backend must be running on same origin (Flask) -->
+</body>
 </html>
