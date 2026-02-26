@@ -1,0 +1,205 @@
+const DatabaseLayer = {
+      processingHistory: [],
+      
+      saveProcessingResult(result) {
+        const record = {
+          id: Date.now(),
+          timestamp: new Date().toISOString(),
+          operation: result.operation,
+          rawData: result.rawData,
+          processedData: result.processedData,
+          processingTime: result.processingTime,
+          steps: result.steps
+        };
+        this.processingHistory.push(record);
+        return record;
+      },
+      
+      getProcessingHistory() {
+        return this.processingHistory;
+      },
+      
+      clearHistory() {
+        this.processingHistory = [];
+      },
+      
+      exportData() {
+        return JSON.stringify(this.processingHistory, null, 2);
+      }
+    };
+
+    // ============================================================================
+    // BACKEND LAYER - Business logic and algorithms
+    // ============================================================================
+    const BackendLayer = {
+      // Vedic Squaring using Duplex Method
+      vedicSquare(num) {
+        const steps = [];
+        const digits = String(Math.abs(Math.round(num))).split('').map(Number);
+        const n = digits.length;
+        
+        steps.push({ type: 'init', value: num, message: `Squaring ${num} using Dwandwa (Duplex) method` });
+        
+        let result = 0;
+        let carry = 0;
+        const duplexValues = [];
+        
+        for (let i = 0; i < 2 * n - 1; i++) {
+          let duplex = 0;
+          const pairs = [];
+          
+          for (let j = 0; j < n; j++) {
+            const k = i - j;
+            if (k >= 0 && k < n) {
+              if (j === k) {
+                duplex += digits[j] * digits[j];
+                pairs.push(`${digits[j]}²`);
+              } else if (j < k) {
+                duplex += 2 * digits[j] * digits[k];
+                pairs.push(`2×${digits[j]}×${digits[k]}`);
+              }
+            }
+          }
+          
+          duplexValues.push({ position: i, duplex, pairs });
+          steps.push({ 
+            type: 'duplex', 
+            position: i, 
+            duplex, 
+            pairs: pairs.join(' + '),
+            message: `Position ${i}: D = ${pairs.join(' + ')} = ${duplex}`
+          });
+        }
+        
+        let finalDigits = [];
+        for (let i = duplexValues.length - 1; i >= 0; i--) {
+          const total = duplexValues[i].duplex + carry;
+          finalDigits.unshift(total % 10);
+          carry = Math.floor(total / 10);
+        }
+        if (carry > 0) finalDigits.unshift(carry);
+        
+        result = parseInt(finalDigits.join(''));
+        steps.push({ type: 'result', value: result, message: `Final Result: ${num}² = ${result}` });
+        
+        return { result, steps };
+      },
+
+      // Vedic Cubing using Triplex Method
+      vedicCube(num) {
+        const steps = [];
+        const n = Math.abs(Math.round(num));
+        
+        steps.push({ type: 'init', value: num, message: `Cubing ${num} using Vedic Triplex method` });
+        
+        const triplex1 = n * n * n;
+        steps.push({ type: 'cube', value: triplex1, message: `Triplex calculation: ${n}³ = ${triplex1}` });
+        
+        return { result: triplex1, steps };
+      },
+
+      // Min-Max Normalization
+      normalize(data, range) {
+        const min = Math.min(...data);
+        const max = Math.max(...data);
+        const [targetMin, targetMax] = range === '-1-1' ? [-1, 1] : range === '0-100' ? [0, 100] : [0, 1];
+        
+        return data.map(val => {
+          if (max === min) return targetMin;
+          return ((val - min) / (max - min)) * (targetMax - targetMin) + targetMin;
+        });
+      },
+
+      // Standard Deviation Calculation
+      calculateStandardDeviation(data) {
+        const mean = data.reduce((a, b) => a + b, 0) / data.length;
+        const variance = data.reduce((sq, n) => sq + Math.pow(n - mean, 2), 0) / data.length;
+        const stdDev = Math.sqrt(variance);
+        
+        return {
+          mean,
+          stdDev,
+          variance,
+          steps: [
+            { type: 'stat', message: `Mean (μ): ${mean.toFixed(4)}` },
+            { type: 'stat', message: `Variance (σ²): ${variance.toFixed(4)}` },
+            { type: 'stat', message: `Std Dev (σ): ${stdDev.toFixed(4)}` }
+          ]
+        };
+      },
+
+      // Z-Score Normalization
+      zScoreNormalize(data) {
+        const mean = data.reduce((a, b) => a + b, 0) / data.length;
+        const variance = data.reduce((sq, n) => sq + Math.pow(n - mean, 2), 0) / data.length;
+        const stdDev = Math.sqrt(variance);
+        
+        return data.map(val => (val - mean) / (stdDev || 1));
+      },
+
+      // Main processing orchestrator
+      processData(rawData, operation, normRange) {
+        let processedData = [];
+        let allSteps = [];
+        
+        switch(operation) {
+          case 'square':
+            rawData.forEach((num, idx) => {
+              const { result, steps } = this.vedicSquare(num);
+              processedData.push(result);
+              if (idx < 3) allSteps.push(...steps);
+            });
+            break;
+            
+          case 'cube':
+            rawData.forEach((num, idx) => {
+              const { result, steps } = this.vedicCube(num);
+              processedData.push(result);
+              if (idx < 3) allSteps.push(...steps);
+            });
+            break;
+            
+          case 'normalize':
+            processedData = this.normalize(rawData, normRange);
+            allSteps.push({ type: 'normalize', message: `Min-Max normalized to range [${normRange}]` });
+            break;
+            
+          case 'std':
+            const stdResult = this.calculateStandardDeviation(rawData);
+            processedData = this.zScoreNormalize(rawData);
+            allSteps.push(...stdResult.steps);
+            allSteps.push({ type: 'normalize', message: `Z-Score normalization applied` });
+            break;
+            
+          case 'variance':
+            const varResult = this.calculateStandardDeviation(rawData);
+            processedData = rawData.map(val => {
+              const dev = Math.pow(val - varResult.mean, 2);
+              return (dev / varResult.variance);
+            });
+            allSteps.push(...varResult.steps);
+            allSteps.push({ type: 'stat', message: `Variance analysis: normalized deviations computed` });
+            break;
+            
+          case 'square-norm':
+            rawData.forEach((num, idx) => {
+              const { result } = this.vedicSquare(num);
+              processedData.push(result);
+            });
+            processedData = this.normalize(processedData, normRange);
+            allSteps.push({ type: 'normalize', message: `Squared values normalized to range [${normRange}]` });
+            break;
+            
+          case 'cube-norm':
+            rawData.forEach((num, idx) => {
+              const { result } = this.vedicCube(num);
+              processedData.push(result);
+            });
+            processedData = this.normalize(processedData, normRange);
+            allSteps.push({ type: 'normalize', message: `Cubed values normalized to range [${normRange}]` });
+            break;
+        }
+        
+        return { processedData, steps: allSteps };
+      }
+    };
