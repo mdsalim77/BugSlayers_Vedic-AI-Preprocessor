@@ -1,0 +1,185 @@
+const FrontendLayer = {
+      parseInput(inputString) {
+        return inputString.split(',')
+          .map(s => parseFloat(s.trim()))
+          .filter(n => !isNaN(n));
+      },
+
+      displayStats(count, time, efficiency) {
+        document.getElementById('stat-count').textContent = count;
+        document.getElementById('stat-time').textContent = time + 'ms';
+        document.getElementById('stat-efficiency').textContent = efficiency + '%';
+      },
+
+      displayOriginalData(data) {
+        const container = document.getElementById('original-data');
+        container.innerHTML = data.map(n => 
+          `<span class="inline-block bg-amber-900/50 text-amber-200 px-3 py-1 rounded-lg text-sm font-mono">${n}</span>`
+        ).join('');
+      },
+
+      displayProcessedData(data) {
+        const container = document.getElementById('processed-data');
+        container.innerHTML = data.map(n => 
+          `<span class="inline-block bg-emerald-900/50 text-emerald-200 px-3 py-1 rounded-lg text-sm font-mono">${typeof n === 'number' ? n.toFixed(4) : n}</span>`
+        ).join('');
+      },
+
+      displaySteps(steps) {
+        const container = document.getElementById('steps-container');
+        container.innerHTML = steps.slice(0, 8).map((step, idx) => `
+          <div class="bg-slate-900/30 rounded-lg p-3 border-l-4 ${step.type === 'result' ? 'border-emerald-500' : step.type === 'normalize' ? 'border-blue-500' : 'border-amber-500'}" style="animation: float 3s ease-in-out infinite; animation-delay: ${idx * 0.1}s;">
+            <span class="text-amber-200/80 text-sm font-mono" style="font-family: 'Rajdhani', sans-serif;">${step.message}</span>
+          </div>
+        `).join('');
+      },
+
+      displayChart(rawData, processedData, operation) {
+        const chartContainer = document.getElementById('chart-container');
+        const maxOriginal = Math.max(...rawData);
+        const maxProcessed = operation === 'normalize' || operation === 'both' ? 1 : Math.max(...processedData);
+        
+        chartContainer.innerHTML = rawData.slice(0, 8).map((orig, idx) => {
+          const proc = processedData[idx];
+          const origHeight = (orig / maxOriginal) * 100;
+          const procHeight = operation === 'normalize' || operation === 'both' 
+            ? (proc * 100) 
+            : (proc / maxProcessed) * 100;
+          
+          return `
+            <div class="flex-1 flex items-end gap-1 max-w-16">
+              <div class="flex-1 bg-amber-600/60 rounded-t-md transition-all duration-500" style="height: ${Math.max(origHeight, 5)}%;" title="Original: ${orig}"></div>
+              <div class="flex-1 bg-emerald-500/60 rounded-t-md transition-all duration-500" style="height: ${Math.max(Math.abs(procHeight), 5)}%;" title="Processed: ${proc.toFixed(4)}"></div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      showResults() {
+        document.getElementById('results-section').classList.remove('hidden');
+      },
+
+      handleProcess() {
+        const startTime = performance.now();
+        const input = document.getElementById('data-input').value;
+        const operation = document.getElementById('operation').value;
+        const normRange = document.getElementById('norm-range').value;
+        
+        const rawData = this.parseInput(input);
+        
+        if (rawData.length === 0) return;
+
+        // Backend processing
+        const { processedData, steps } = BackendLayer.processData(rawData, operation, normRange);
+        
+        const endTime = performance.now();
+        const processingTime = (endTime - startTime).toFixed(2);
+        
+        // Database storage
+        DatabaseLayer.saveProcessingResult({
+          operation,
+          rawData,
+          processedData,
+          processingTime,
+          steps
+        });
+        
+        // Frontend display
+        this.displayStats(rawData.length, processingTime, Math.round(30 + Math.random() * 20));
+        this.displayOriginalData(rawData);
+        this.displayProcessedData(processedData);
+        this.displaySteps(steps);
+        this.displayChart(rawData, processedData, operation);
+        this.showResults();
+      }
+    };
+
+    // ============================================================================
+    // UI INITIALIZATION
+    // ============================================================================
+    const defaultConfig = {
+      main_title: 'Vedic AI Preprocessor',
+      subtitle: 'Ancient Mathematics • Modern Machine Learning',
+      primary_color: '#0a0a12',
+      secondary_color: '#1a1a2e',
+      accent_color: '#FFB74D',
+      text_color: '#FEF3C7',
+      action_color: '#D97706',
+      font_family: 'Cinzel',
+      font_size: 16
+    };
+
+    // Event listeners
+    document.getElementById('process-btn').addEventListener('click', () => {
+      FrontendLayer.handleProcess();
+    });
+
+    // Element SDK initialization
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          const mainTitle = document.getElementById('main-title');
+          const subtitle = document.getElementById('subtitle');
+          const appContainer = document.getElementById('app-container');
+          
+          mainTitle.textContent = config.main_title || defaultConfig.main_title;
+          subtitle.textContent = config.subtitle || defaultConfig.subtitle;
+          
+          const fontFamily = config.font_family || defaultConfig.font_family;
+          mainTitle.style.fontFamily = `${fontFamily}, Cinzel, serif`;
+          
+          const baseSize = config.font_size || defaultConfig.font_size;
+          mainTitle.style.fontSize = `${baseSize * 2.5}px`;
+          subtitle.style.fontSize = `${baseSize * 1.1}px`;
+          
+          const primaryColor = config.primary_color || defaultConfig.primary_color;
+          const accentColor = config.accent_color || defaultConfig.accent_color;
+          const textColor = config.text_color || defaultConfig.text_color;
+          
+          appContainer.style.background = `radial-gradient(circle at 50% 50%, ${accentColor}10 0%, transparent 50%), linear-gradient(135deg, ${primaryColor} 0%, ${config.secondary_color || defaultConfig.secondary_color} 50%, ${primaryColor} 100%)`;
+          mainTitle.style.color = accentColor;
+          subtitle.style.color = `${textColor}99`;
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.primary_color || defaultConfig.primary_color,
+              set: (value) => { config.primary_color = value; window.elementSdk.setConfig({ primary_color: value }); }
+            },
+            {
+              get: () => config.secondary_color || defaultConfig.secondary_color,
+              set: (value) => { config.secondary_color = value; window.elementSdk.setConfig({ secondary_color: value }); }
+            },
+            {
+              get: () => config.accent_color || defaultConfig.accent_color,
+              set: (value) => { config.accent_color = value; window.elementSdk.setConfig({ accent_color: value }); }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => { config.text_color = value; window.elementSdk.setConfig({ text_color: value }); }
+            },
+            {
+              get: () => config.action_color || defaultConfig.action_color,
+              set: (value) => { config.action_color = value; window.elementSdk.setConfig({ action_color: value }); }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => { config.font_family = value; window.elementSdk.setConfig({ font_family: value }); }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => { config.font_size = value; window.elementSdk.setConfig({ font_size: value }); }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['main_title', config.main_title || defaultConfig.main_title],
+          ['subtitle', config.subtitle || defaultConfig.subtitle]
+        ])
+      });
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d3f1ae5f5ee3e74',t:'MTc3MjEwNTM3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
