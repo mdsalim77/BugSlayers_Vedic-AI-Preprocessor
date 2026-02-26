@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vedic AI Preprocessor</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&amp;family=Rajdhani:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(255, 183, 77, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(255, 183, 77, 0.6); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes data-flow {
+      0% { stroke-dashoffset: 100; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .yantra-bg {
+      background: 
+        radial-gradient(circle at 50% 50%, rgba(255, 183, 77, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, #0a0a12 0%, #1a1a2e 50%, #0a0a12 100%);
+    }
+    .vedic-card {
+      background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(10, 10, 18, 0.95));
+      border: 1px solid rgba(255, 183, 77, 0.2);
+    }
+    .glow-text {
+      text-shadow: 0 0 20px rgba(255, 183, 77, 0.5);
+    }
+    .sacred-border {
+      border-image: linear-gradient(135deg, #FFB74D, #FF8A65, #FFB74D) 1;
+    }
+    .data-particle {
+      animation: float 3s ease-in-out infinite;
+    }
+    .processing-ring {
+      animation: spin-slow 20s linear infinite;
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app-container" class="h-full w-full yantra-bg overflow-auto"><!-- Sacred Geometry Background -->
+   <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <svg class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-10 processing-ring" viewbox="0 0 400 400"><circle cx="200" cy="200" r="150" fill="none" stroke="#FFB74D" stroke-width="0.5" stroke-dasharray="10 5" /> <circle cx="200" cy="200" r="120" fill="none" stroke="#FFB74D" stroke-width="0.5" stroke-dasharray="5 10" /> <circle cx="200" cy="200" r="90" fill="none" stroke="#FFB74D" stroke-width="0.5" /> <polygon points="200,50 350,200 200,350 50,200" fill="none" stroke="#FFB74D" stroke-width="0.5" /> <polygon points="200,80 320,200 200,320 80,200" fill="none" stroke="#FFB74D" stroke-width="0.3" />
+    </svg>
+   </div>
+   <div class="relative z-10 max-w-6xl mx-auto px-6 py-8"><!-- Header -->
+    <header class="text-center mb-10">
+     <div class="inline-flex items-center gap-3 mb-4">
+      <svg class="w-10 h-10 text-amber-400" viewbox="0 0 50 50" fill="none"><circle cx="25" cy="25" r="20" stroke="currentColor" stroke-width="1.5" /> <path d="M25 5 L25 45 M5 25 L45 25" stroke="currentColor" stroke-width="1" /> <circle cx="25" cy="25" r="8" fill="currentColor" opacity="0.3" /> <circle cx="25" cy="25" r="3" fill="currentColor" />
+      </svg>
+      <h1 id="main-title" class="text-4xl md:text-5xl font-bold text-amber-400 glow-text" style="font-family: 'Cinzel', serif;">Vedic AI Preprocessor</h1>
+     </div>
+     <p id="subtitle" class="text-amber-200/70 text-lg" style="font-family: 'Rajdhani', sans-serif;">Ancient Mathematics • Modern Machine Learning</p>
+    </header><!-- Main Grid -->
+    <div class="grid lg:grid-cols-2 gap-6 mb-8"><!-- Input Section -->
+     <div class="vedic-card rounded-2xl p-6" style="animation: pulse-glow 4s ease-in-out infinite;">
+      <h2 class="text-xl font-semibold text-amber-400 mb-4 flex items-center gap-2" style="font-family: 'Cinzel', serif;"><span class="text-2xl">॥</span> Data Input</h2>
+      <div class="space-y-4">
+       <div><label class="block text-amber-200/80 text-sm mb-2" style="font-family: 'Rajdhani', sans-serif;"> Enter numerical data (comma-separated) </label> <textarea id="data-input" class="w-full h-24 bg-slate-900/50 border border-amber-400/30 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-200/30 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 transition-all" style="font-family: 'Rajdhani', sans-serif;" placeholder="e.g., 12, 45, 78, 23, 56, 89, 34, 67">25, 64, 81, 49, 36, 100, 16, 9</textarea>
+       </div>
+       <div class="grid grid-cols-2 gap-4">
+        <div><label class="block text-amber-200/80 text-sm mb-2" style="font-family: 'Rajdhani', sans-serif;"> Normalization Range </label> <select id="norm-range" class="w-full bg-slate-900/50 border border-amber-400/30 rounded-xl px-4 py-3 text-amber-100 focus:border-amber-400 focus:outline-none transition-all" style="font-family: 'Rajdhani', sans-serif;"> <option value="0-1">0 to 1</option> <option value="-1-1">-1 to 1</option> <option value="0-100">0 to 100</option> </select>
+        </div>
+        <div><label class="block text-amber-200/80 text-sm mb-2" style="font-family: 'Rajdhani', sans-serif;"> Operation </label> <select id="operation" class="w-full bg-slate-900/50 border border-amber-400/30 rounded-xl px-4 py-3 text-amber-100 focus:border-amber-400 focus:outline-none transition-all" style="font-family: 'Rajdhani', sans-serif;"> <option value="square">Vedic Squaring (Dwandwa)</option> <option value="cube">Vedic Cubing</option> <option value="normalize">Min-Max Normalization</option> <option value="std">Standard Deviation</option> <option value="variance">Variance Analysis</option> <option value="square-norm">Square + Normalize</option> <option value="cube-norm">Cube + Normalize</option> </select>
+        </div>
+       </div><button id="process-btn" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3" style="font-family: 'Rajdhani', sans-serif;">
+        <svg class="w-5 h-5" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg> Process with Vedic Mathematics </button>
+      </div>
+     </div><!-- Vedic Method Explanation -->
+     <div class="vedic-card rounded-2xl p-6">
+      <h2 class="text-xl font-semibold text-amber-400 mb-4 flex items-center gap-2" style="font-family: 'Cinzel', serif;"><span class="text-2xl">॥</span> The Duplex Method (Dwandwa)</h2>
+      <div class="space-y-4 text-amber-200/80" style="font-family: 'Rajdhani', sans-serif;">
+       <div class="bg-slate-900/50 rounded-xl p-4 border border-amber-400/20">
+        <h3 class="text-amber-400 font-semibold mb-2">ऊर्ध्वतिर्यग्भ्याम् (Urdhva-Tiryagbhyam)</h3>
+        <p class="text-sm leading-relaxed">"Vertically and crosswise" - The ancient Vedic sutra for fast multiplication and squaring. For squaring a number, we compute the <strong class="text-amber-300">Duplex</strong> of each digit group.</p>
+       </div>
+       <div class="bg-slate-900/50 rounded-xl p-4 border border-amber-400/20">
+        <h3 class="text-amber-400 font-semibold mb-2">Duplex Formula</h3>
+        <div class="font-mono text-sm space-y-1">
+         <p>• Single digit <span class="text-amber-300">a</span>: D(a) = a²</p>
+         <p>• Two digits <span class="text-amber-300">ab</span>: D(ab) = 2×a×b</p>
+         <p>• Three digits <span class="text-amber-300">abc</span>: D(abc) = 2×a×c + b²</p>
+        </div>
+       </div>
+       <div id="example-display" class="bg-gradient-to-br from-amber-900/30 to-orange-900/30 rounded-xl p-4 border border-amber-400/30">
+        <h3 class="text-amber-400 font-semibold mb-3">Live Example: 23²</h3>
+        <div class="grid grid-cols-3 gap-2 text-center text-sm">
+         <div class="bg-slate-900/50 rounded-lg p-2">
+          <div class="text-amber-300 font-bold">
+           D(2)
+          </div>
+          <div class="text-amber-100">
+           2² = 4
+          </div>
+         </div>
+         <div class="bg-slate-900/50 rounded-lg p-2">
+          <div class="text-amber-300 font-bold">
+           D(23)
+          </div>
+          <div class="text-amber-100">
+           2×2×3 = 12
+          </div>
+         </div>
+         <div class="bg-slate-900/50 rounded-lg p-2">
+          <div class="text-amber-300 font-bold">
+           D(3)
+          </div>
+          <div class="text-amber-100">
+           3² = 9
+          </div>
+         </div>
+        </div>
+        <div class="mt-3 text-center"><span class="text-amber-300">Result:</span> <span class="text-xl font-bold text-amber-100">529</span>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Results Section -->
+    <div id="results-section" class="vedic-card rounded-2xl p-6 mb-8 hidden">
+     <h2 class="text-xl font-semibold text-amber-400 mb-6 flex items-center gap-2" style="font-family: 'Cinzel', serif;"><span class="text-2xl">॥</span> Processing Results</h2>
+     <div class="grid md:grid-cols-3 gap-6 mb-6">
+      <div class="bg-slate-900/50 rounded-xl p-4 border border-amber-400/20 text-center">
+       <div class="text-amber-200/60 text-sm mb-1" style="font-family: 'Rajdhani', sans-serif;">
+        Data Points
+       </div>
+       <div id="stat-count" class="text-3xl font-bold text-amber-400" style="font-family: 'Cinzel', serif;">
+        0
+       </div>
+      </div>
+      <div class="bg-slate-900/50 rounded-xl p-4 border border-amber-400/20 text-center">
+       <div class="text-amber-200/60 text-sm mb-1" style="font-family: 'Rajdhani', sans-serif;">
+        Processing Time
+       </div>
+       <div id="stat-time" class="text-3xl font-bold text-amber-400" style="font-family: 'Cinzel', serif;">
+        0ms
+       </div>
+      </div>
+      <div class="bg-slate-900/50 rounded-xl p-4 border border-amber-400/20 text-center">
+       <div class="text-amber-200/60 text-sm mb-1" style="font-family: 'Rajdhani', sans-serif;">
+        Efficiency Gain
+       </div>
+       <div id="stat-efficiency" class="text-3xl font-bold text-emerald-400" style="font-family: 'Cinzel', serif;">
+        0%
+       </div>
+      </div>
+     </div><!-- Step by Step Visualization -->
+     <div id="steps-container" class="mb-6 space-y-3"></div><!-- Data Visualization -->
+     <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-slate-900/50 rounded-xl p-4 border border-amber-400/20">
+       <h3 class="text-amber-400 font-semibold mb-3" style="font-family: 'Rajdhani', sans-serif;">Original Data</h3>
+       <div id="original-data" class="flex flex-wrap gap-2"></div>
+      </div>
+      <div class="bg-slate-900/50 rounded-xl p-4 border border-amber-400/20">
+       <h3 class="text-amber-400 font-semibold mb-3" style="font-family: 'Rajdhani', sans-serif;">Processed Data</h3>
+       <div id="processed-data" class="flex flex-wrap gap-2"></div>
+      </div>
+     </div><!-- Bar Chart Comparison -->
+     <div class="mt-6 bg-slate-900/50 rounded-xl p-4 border border-amber-400/20">
+      <h3 class="text-amber-400 font-semibold mb-4" style="font-family: 'Rajdhani', sans-serif;">Visual Comparison</h3>
+      <div id="chart-container" class="h-48 flex items-end justify-around gap-2"></div>
+     </div>
+    </div><!-- Footer -->
+    <footer class="text-center text-amber-200/40 text-sm pb-8" style="font-family: 'Rajdhani', sans-serif;">
+     <div class="flex items-center justify-center gap-2 mb-2"><span>वेदगणित</span> <span>•</span> <span>Vedic Mathematics</span> <span>•</span> <span>AI Preprocessing</span>
+     </div>
+     <p>Based on the sutras of Sri Bharati Krishna Tirthaji</p>
+    </footer>
+   </div>
+  </div>
+  <script>
